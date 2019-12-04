@@ -1,0 +1,29 @@
+<resources>
+
+    <string name="app_name">Encuestas</string>
+    <string name="title_activity_menu">Menu</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Nombre</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="menu_slideshow">Slideshow</string>
+    <string name="menu_tools">Tools</string>
+    <string name="menu_share">Share</string>
+    <string name="menu_send">Send</string>
+    <string name="menu_logout">Salir</string>
+
+    <string name="title_activity_home">Home</string>
+
+    <!--Url pagina-->
+    <string name="dominio_pan">https://partidos-encuestas.000webhostapp.com/</string>
+
+    <string name="url_usuarios">api/Ingresar/Usuarios</string>
+    <string name="url_CargarLocation">api/CargarLocation</string>
+    <string name="url_descargar_encuestas">api/ObtenerEncuestas</string>
+
+</resources>
