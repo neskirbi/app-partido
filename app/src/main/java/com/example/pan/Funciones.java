@@ -7,6 +7,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
@@ -14,12 +15,14 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.opengl.GLSurfaceView;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.v4.app.ActivityCompat;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
 import android.util.Base64;
@@ -27,6 +30,10 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -430,8 +437,13 @@ public class Funciones {
 
     public String URL_Dominio(){
         String URL="";
+        if (!BuildConfig.DEBUG) {
+            URL="http://192.168.1.110/pruebas/Encuestas/";
+        }else {
+            URL=context.getString(R.string.dominio_pan);
+        }
 
-        URL=context.getString(R.string.dominio_pan);
+
 
 
         return URL;
@@ -505,7 +517,7 @@ public class Funciones {
 
 
         try {
-            respuesta=Conexion("",url);
+            respuesta=Conexion("{\"id_usuario\":\""+GetIdUser()+"\"}",url);
 
             if (respuesta.length() == 0) {
                 Toast.makeText(context, "Sin resultados!!", Toast.LENGTH_SHORT).show();
@@ -519,10 +531,11 @@ public class Funciones {
 
                     ContentValues encuestas = new ContentValues();
                     encuestas.put("id_encuesta", jsonObject.get("id_encuesta").toString() );
-                    encuestas.put("json", arrayEncuestas.get(i).toString() );
+                    encuestas.put("json", arrayEncuestas.get(i).toString());
+                    encuestas.put("orden",i);
 
                     db.insert("encuestas", null, encuestas);
-                    Log.i("Encuestas","--->"+respuesta);
+                    Log.i("Encuestas","--->"+arrayEncuestas.get(i));
 
                 }
 
@@ -539,24 +552,12 @@ public class Funciones {
         ArrayList<String> id_pregunta=new ArrayList<>();
 
 
-        Cursor c =  db.rawQuery("SELECT * from encuestas where id_encuesta='"+id_encuesta+"' ",null);
+        Cursor c =  db.rawQuery("SELECT * from encuestas where id_encuesta='"+id_encuesta+"' order by orden asc ",null);
         c.moveToFirst();
         Log.i("CrearPreguntas",c.getCount()+"");
 
         //Agrego la localizacion a todas las encuestas
         JSONObject jsonPreguntas0=new JSONObject();
-
-        try {
-            jsonPreguntas0.put("opciones","");
-            jsonPreguntas0.put("tipo","0");
-            jsonPreguntas0.put("pregunta","Location");
-            preguntas.add(jsonPreguntas0);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-
-
 
 
         while(!c.isAfterLast()){
@@ -594,7 +595,6 @@ public class Funciones {
     private void GeneraPreguntas(final LinearLayout contenedor,final ArrayList<String> id_pregunta, ArrayList<JSONObject> preguntas) {
         Button enviar=null;
         TextView texto = null;
-        EditText edit = null;
         Spinner spinner = null;
         RadioGroup radioGroup=null;
         RadioButton radioButton=null;
@@ -617,45 +617,7 @@ public class Funciones {
 
                 switch (preguntas.get(i).getString("tipo")){
 
-                    case "0":
 
-                        Log.i("CrearPreguntas",preguntas.get(i).getString("pregunta"));
-
-                        edit=new EditText(context);
-                        edit.setTag(i);
-                        edit.setId(Id);
-
-                        edit.addTextChangedListener(new TextWatcher() {
-                            @Override
-                            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                            }
-
-                            @Override
-                            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                                //EditText edi=contenedor.getRootView().findViewById(v.getId());
-                                //Toast.makeText(context, "pos: "+pos+" S:"+s+" start: "+start+" before: "+before+" count: "+count+"", Toast.LENGTH_SHORT).show();
-
-                                if(s.length()!=0){
-                                    respuesta.set(pos,"{\"id_pregunta\":\""+id_pregunta.get(pos)+"\",\"id_respuesta\":\""+GetUIID()+"\",\"respuesta\":\""+s+"\"}");
-                                }else{
-                                    respuesta.set(pos,"");
-                                }
-
-                            }
-
-                            @Override
-                            public void afterTextChanged(Editable s) {
-
-                            }
-                        });
-                        ObtenerLocation(edit);
-
-                        Id++;
-                        contenedor.addView(edit);
-
-                        break;
 
 
                     case "1":
@@ -666,7 +628,7 @@ public class Funciones {
 
                         Log.i("CrearPreguntas",preguntas.get(i).getString("pregunta"));
 
-                        edit=new EditText(context);
+                        final EditText edit=new EditText(context);
                         edit.setTag(i);
                         edit.setId(Id);
                         edit.addTextChangedListener(new TextWatcher() {
@@ -797,6 +759,115 @@ public class Funciones {
                     case "4":
                         texto =new TextView(context);
                         texto.setLayoutParams(parameter);
+                        texto.setText("Ubicación");
+                        contenedor.addView(texto);
+
+                        Log.i("CrearPreguntas",preguntas.get(i).getString("pregunta"));
+                        final EditText lat=new EditText(context),lon=new EditText(context);
+                        final EditText edit_loc=new EditText(context);
+                        edit_loc.setTag(i);
+                        edit_loc.setId(Id);
+                        contenedor.addView(edit_loc);
+
+                        lat.setInputType(InputType.TYPE_CLASS_NUMBER);
+                        lat.addTextChangedListener(new TextWatcher() {
+                            @Override
+                            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                            }
+
+                            @Override
+                            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                                //EditText edi=contenedor.getRootView().findViewById(v.getId());
+                                //Toast.makeText(context, "pos: "+pos+" S:"+s+" start: "+start+" before: "+before+" count: "+count+"", Toast.LENGTH_SHORT).show();
+
+                                String lont="",latt="";
+                                if(s.length()!=0){
+                                    lont= lon.getText().toString() ;
+                                    latt= lat.getText().toString() ;
+                                }else{
+                                    lont="";
+                                    latt="";
+                                }
+                                edit_loc.setText("{\"lat\":\""+latt+"\",\"lon\":\""+lont+"\"}");
+                            }
+
+                            @Override
+                            public void afterTextChanged(Editable s) {
+
+                            }
+                        });
+                        contenedor.addView(lat);
+                        lat.setInputType(InputType.TYPE_CLASS_NUMBER);
+                        lon.addTextChangedListener(new TextWatcher() {
+                            @Override
+                            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                            }
+
+                            @Override
+                            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                                //EditText edi=contenedor.getRootView().findViewById(v.getId());
+                                //Toast.makeText(context, "pos: "+pos+" S:"+s+" start: "+start+" before: "+before+" count: "+count+"", Toast.LENGTH_SHORT).show();
+
+                                String lont="",latt="";
+                                if(s.length()!=0){
+                                    lont= lon.getText().toString() ;
+                                    latt= lat.getText().toString() ;
+                                }else{
+                                    lont="";
+                                    latt="";
+                                }
+                                edit_loc.setText("{\"lat\":\""+latt+"\",\"lon\":\""+lont+"\"}");
+
+                            }
+
+                            @Override
+                            public void afterTextChanged(Editable s) {
+
+                            }
+                        });
+                        contenedor.addView(lon);
+                        edit_loc.addTextChangedListener(new TextWatcher() {
+                            @Override
+                            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                            }
+
+                            @Override
+                            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                                //EditText edi=contenedor.getRootView().findViewById(v.getId());
+                                //Toast.makeText(context, "pos: "+pos+" S:"+s+" start: "+start+" before: "+before+" count: "+count+"", Toast.LENGTH_SHORT).show();
+
+                                if(s.length()!=0){
+                                    respuesta.set(pos,"{\"id_pregunta\":\""+id_pregunta.get(pos)+"\",\"id_respuesta\":\""+GetUIID()+"\",\"respuesta\":\""+s+"\"}");
+                                }else{
+                                    respuesta.set(pos,"");
+                                }
+
+                            }
+
+                            @Override
+                            public void afterTextChanged(Editable s) {
+
+                            }
+                        });
+
+                        ObtenerLocation(lat,lon);
+
+                        Id++;
+                        contenedor.addView(edit_loc);
+
+
+
+                        break;
+
+                    case "5":
+                        texto =new TextView(context);
+                        texto.setLayoutParams(parameter);
                         texto.setText(preguntas.get(i).getString("pregunta"));
                         contenedor.addView(texto);
 
@@ -897,7 +968,7 @@ public class Funciones {
     LocationManager locationManager;
     LocationListener locationListener;
 
-    private void ObtenerLocation(final EditText edit) {
+    private void ObtenerLocation(final EditText lat,final EditText lon) {
 
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 
@@ -907,7 +978,9 @@ public class Funciones {
             public void onLocationChanged(android.location.Location location) {
 
                 //lon.add(location.getLongitude());
-                edit.setText("{\"lat\":\""+location.getLatitude()+"\",\"lon\":\""+location.getLongitude()+"\"}");
+
+                lat.setText(location.getLatitude()+"");
+                lon.setText(location.getLongitude()+"");
                 Detener();
 
 
@@ -938,9 +1011,9 @@ public class Funciones {
             boolean gps_enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
             boolean network_enabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
 
-            if (gps_enabled) {
+            if (network_enabled) {
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-            }else if (network_enabled) {
+            }else if (gps_enabled) {
                 locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
             }
 
@@ -986,4 +1059,38 @@ public class Funciones {
 
     }
 
+    public void LeerCP(){
+        AssetManager assetManager = context.getAssets();
+        InputStream input;
+        try {
+            input = assetManager.open("Codigo_CP.txt");
+
+            int size = input.available();
+            byte[] buffer = new byte[size];
+            input.read(buffer);
+            input.close();
+
+            // byte buffer into a string
+            String text = new String(buffer);
+            text = convertStringToUTF8(text);
+            Toast.makeText(context, ""+text, Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    public static String convertStringToUTF8(String s) {
+        String out = null;
+        try {
+            out = new String(s.getBytes("UTF-8"), "cp1252");
+        } catch (java.io.UnsupportedEncodingException e) {
+            return null;
+        }
+        return out;
+    }
+
 }
+
+
+

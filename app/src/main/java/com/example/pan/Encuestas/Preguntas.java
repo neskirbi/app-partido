@@ -28,6 +28,8 @@ public class Preguntas extends AppCompatActivity  {
         contenedor=findViewById(R.id.contenedor);
         funciones.CargarPreguntas(contenedor,id_ecuesta);
 
+        //funciones.LeerCP();
+
 
 
     }

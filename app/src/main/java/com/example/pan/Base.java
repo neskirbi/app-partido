@@ -45,7 +45,8 @@ public class Base extends SQLiteOpenHelper {
 
         ENCUESTAS_TABLE_CREATE= "CREATE TABLE IF NOT EXISTS  encuestas(" +
                 "id_encuesta TEXT NOT NULL," +
-                "json TEXT NOT NULL )";
+                "json TEXT NOT NULL," +
+                "orden int NOT NULL  )";
 
         RESPUESTAS_TABLE_CREATE= "CREATE TABLE IF NOT EXISTS  respuestas(" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
