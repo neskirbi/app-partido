@@ -444,13 +444,20 @@ public class Funciones {
     }
 
     public String URL_Dominio(){
-        String URL="",wifiname=getWifiName().toString();
+        String URL="",wifiname=getWifiName();
 
-        if (wifiname.contains("Casa_AK")) {
-            URL="http://192.168.1.110/pruebas/Encuestas/";
-            Log.i("URLLLLL","localhost: "+wifiname);
+        if(wifiname!=null)
+        {
+            if (wifiname.contains("Casa_AK")) {
+                URL="http://192.168.1.110/pruebas/Encuestas/";
+                Log.i("URLLLLL","localhost: "+wifiname);
+            }else{
+                URL=context.getString(R.string.dominio_pan);
+                Log.i("URLLLLL","web: "+wifiname);
+            }
         }else{
-            URL=context.getString(R.string.dominio_pan);
+            //192.168.43.22
+            URL="http://192.168.43.22/Encuestas/";
             Log.i("URLLLLL","web: "+wifiname);
         }
 
@@ -691,52 +698,64 @@ public class Funciones {
                         Id++;
                         contenedor.addView(edit);
                         break;
+
                     case "2":
-                        Spinner spinner = null;
+
+
+                        CheckBox checkBox=null;
                         Texto(preguntas.get(i).getString("pregunta"),contenedor);
 
                         Log.i("CrearPreguntas",preguntas.get(i).getString("pregunta"));
 
+                        JSONArray jsonArray4=new JSONArray(preguntas.get(i).getString("opciones"));
 
-                        spinner =new Spinner(context);
+                        //select.add(new Select("0","--Elegir--"));
+                        final JSONArray jsonArrayt=new JSONArray();
+                        for (int j = 0; j<jsonArray4.length();j++){
+                            JSONObject jsonObject=new JSONObject(jsonArray4.getString(j));
+                            checkBox=new CheckBox(context);
+                            checkBox.setText(jsonObject.getString("texto"));
+                            checkBox.setId(Id);
+                            checkBox.setTag(i);
 
-                        ArrayList<Select> select=new ArrayList<>();
 
-                        final JSONArray jsonArray2=new JSONArray(preguntas.get(i).getString("opciones"));
+                            checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                                @Override
+                                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-                        select.add(new Select("--Elegir--"));
 
-                        for (int j = 0; j<jsonArray2.length();j++){
-                            JSONObject jsonObject=new JSONObject(jsonArray2.getString(j));
-                            select.add(new Select(jsonObject.getString("texto")));
-                        }
-                        ArrayAdapter<Select> comboAdapter = new ArrayAdapter(context, R.layout.spinner_item, select);
-                        //Cargo el spinner con los datos
-                        spinner.setAdapter(comboAdapter);
-                        spinner.setTag(i);
-                        spinner.setId(Id);
+                                    try{
+                                        if(isChecked)
+                                        {
+                                            jsonArrayt.put("{\"texto\":\""+buttonView.getText()+"\"}");
+                                        }else{
+                                            Quitar(jsonArrayt,"{\"texto\":\""+buttonView.getText()+"\"}");
+                                        }
 
-                        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                            @Override
-                            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                                if(position!=0){
-                                    respuesta.set(pos,"{\"id_pregunta\":\""+id_pregunta.get(pos)+"\",\"id_respuesta\":\""+GetUIID()+"\",\"respuesta\":\""+parent.getSelectedItem()+"\"}");
-                                }else{
-                                    respuesta.set(pos,"");
+                                        if(jsonArrayt.length()!=0){
+                                            respuesta.set(pos,"{\"id_pregunta\":\""+id_pregunta.get(pos)+"\",\"id_respuesta\":\""+GetUIID()+"\",\"respuesta\":"+jsonArrayt+"}");
+                                        }else{
+                                            respuesta.set(pos,"");
+                                        }
+
+
+                                    }catch (Exception s){
+                                        Log.i("CrearPreguntas","Error: "+s.getMessage());
+                                    }
+
+
                                 }
+                            });
 
-                            }
+                            Id++;
+                            contenedor.addView(checkBox);
 
-                            @Override
-                            public void onNothingSelected(AdapterView<?> parent) {
+                            //select.add(new Select(jsonObject.getString("value"),jsonObject.getString("texto")));
+                        }
 
-                            }
-                        });
-
-                        Id++;
-                        contenedor.addView(spinner);
 
                         break;
+
 
                     case "3":
                         RadioGroup radioGroup=null;
@@ -785,8 +804,8 @@ public class Funciones {
                     break;
 
                     case "4":
-                        Texto("Localización",contenedor);
 
+                        Texto(preguntas.get(i).getString("pregunta"),contenedor);
                         Log.i("CrearPreguntas",preguntas.get(i).getString("pregunta"));
 
                         final EditText lat=new EditText(context),lon=new EditText(context);
@@ -899,61 +918,53 @@ public class Funciones {
                         break;
 
                     case "5":
-
-
-                        CheckBox checkBox=null;
+                        Spinner spinner = null;
                         Texto(preguntas.get(i).getString("pregunta"),contenedor);
 
                         Log.i("CrearPreguntas",preguntas.get(i).getString("pregunta"));
 
-                        JSONArray jsonArray4=new JSONArray(preguntas.get(i).getString("opciones"));
 
-                        //select.add(new Select("0","--Elegir--"));
-                        final JSONArray jsonArrayt=new JSONArray();
-                        for (int j = 0; j<jsonArray4.length();j++){
-                            JSONObject jsonObject=new JSONObject(jsonArray4.getString(j));
-                            checkBox=new CheckBox(context);
-                            checkBox.setText(jsonObject.getString("texto"));
-                            checkBox.setId(Id);
-                            checkBox.setTag(i);
+                        spinner =new Spinner(context);
 
+                        ArrayList<Select> select=new ArrayList<>();
 
-                            checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                                @Override
-                                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        final JSONArray jsonArray2=new JSONArray(preguntas.get(i).getString("opciones"));
 
+                        select.add(new Select("--Elegir--"));
 
-                                    try{
-                                        if(isChecked)
-                                        {
-                                            jsonArrayt.put("{\"texto\":\""+buttonView.getText()+"\"}");
-                                        }else{
-                                            Quitar(jsonArrayt,"{\"texto\":\""+buttonView.getText()+"\"}");
-                                        }
-
-                                        if(jsonArrayt.length()!=0){
-                                            respuesta.set(pos,"{\"id_pregunta\":\""+id_pregunta.get(pos)+"\",\"id_respuesta\":\""+GetUIID()+"\",\"respuesta\":"+jsonArrayt+"}");
-                                        }else{
-                                            respuesta.set(pos,"");
-                                        }
-
-
-                                    }catch (Exception s){
-                                        Log.i("CrearPreguntas","Error: "+s.getMessage());
-                                    }
-
-
-                                }
-                            });
-
-                            Id++;
-                            contenedor.addView(checkBox);
-
-                            //select.add(new Select(jsonObject.getString("value"),jsonObject.getString("texto")));
+                        for (int j = 0; j<jsonArray2.length();j++){
+                            JSONObject jsonObject=new JSONObject(jsonArray2.getString(j));
+                            select.add(new Select(jsonObject.getString("texto")));
                         }
+                        ArrayAdapter<Select> comboAdapter = new ArrayAdapter(context, R.layout.spinner_item, select);
+                        //Cargo el spinner con los datos
+                        spinner.setAdapter(comboAdapter);
+                        spinner.setTag(i);
+                        spinner.setId(Id);
 
+                        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                            @Override
+                            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                                if(position!=0){
+                                    respuesta.set(pos,"{\"id_pregunta\":\""+id_pregunta.get(pos)+"\",\"id_respuesta\":\""+GetUIID()+"\",\"respuesta\":\""+parent.getSelectedItem()+"\"}");
+                                }else{
+                                    respuesta.set(pos,"");
+                                }
+
+                            }
+
+                            @Override
+                            public void onNothingSelected(AdapterView<?> parent) {
+
+                            }
+                        });
+
+                        Id++;
+                        contenedor.addView(spinner);
 
                         break;
+
+
                 }
 
 
@@ -1016,6 +1027,7 @@ public class Funciones {
         String data="";
         for (int i=0 ; i< respuestas_encuestas.size();i++){
             data+="\n\n\n\n"+respuestas_encuestas.get(i);
+
         }
         return data;
     }
@@ -1036,7 +1048,7 @@ public class Funciones {
 
                 lat.setText(location.getLatitude()+"");
                 lon.setText(location.getLongitude()+"");
-                Detener();
+                DetenerLocationManager();
 
 
             }
@@ -1078,7 +1090,7 @@ public class Funciones {
 
     }
 
-    public void Detener(){
+    public void DetenerLocationManager(){
         locationManager.removeUpdates(locationListener);
     }
 

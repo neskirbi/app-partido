@@ -18,10 +18,12 @@ import com.example.pan.R;
 
 public class Preguntas extends AppCompatActivity  {
 
-    String id_ecuesta="";
+    String id_ecuesta="",titulo="";
     Funciones funciones ;
     LinearLayout contenedor;
     ImageButton enviar;
+    TextView ttitulo;
+    TextView repuestas;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,19 +31,20 @@ public class Preguntas extends AppCompatActivity  {
 
         funciones=new Funciones(getApplicationContext());
         id_ecuesta=getIntent().getExtras().getString("id_encuesta");
+        titulo=getIntent().getExtras().getString("titulo");
+        ttitulo=findViewById(R.id.titulo);
+        ttitulo.setText(titulo);
         contenedor=findViewById(R.id.contenedor);
         funciones.CargarPreguntas(contenedor,id_ecuesta);
         enviar=findViewById(R.id.enviar);
-
+        repuestas=new TextView(getApplicationContext());
+        contenedor.addView(repuestas);
         //funciones.LeerCP();
 
         enviar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final TextView repuestas=new TextView(getApplicationContext());
-                contenedor.addView(repuestas);
-
-
+                funciones.Vibrar(70);
                 repuestas.setText(funciones.EnviarRespuestas());
 
             }

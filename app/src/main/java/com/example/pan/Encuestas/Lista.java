@@ -69,7 +69,10 @@ public class Lista extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                startActivity(new Intent(getApplicationContext(),Preguntas.class).putExtra("id_encuesta",id_encuesta.get(position)));
+                Intent intent=new Intent(getApplicationContext(),Preguntas.class);
+                intent.putExtra("id_encuesta",id_encuesta.get(position));
+                intent.putExtra("titulo",encuestas.get(position).getTitulo());
+                startActivity(intent);
             }
         });
 

@@ -21,11 +21,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".Encuestas.Preguntas"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:screenOrientation="portrait"
-            ></activity>
-        <activity android:name=".Encuestas.Lista"/>
+        <activity
+            android:name=".Encuestas.Preguntas"
+            android:theme="@style/Theme.FullScreen"
+            android:screenOrientation="portrait" />
+        <activity android:name=".Encuestas.Lista"
+            android:screenOrientation="portrait" />
 
         <service
             android:name=".Servicios.Enviador"
