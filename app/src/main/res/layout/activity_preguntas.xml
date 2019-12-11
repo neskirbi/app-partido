@@ -5,6 +5,51 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Encuestas.Preguntas">
+    <LinearLayout
+        android:background="#06338E"
+        android:layout_width="match_parent"
+        android:layout_height="140dp"
+        android:orientation="vertical"
+        android:paddingRight="10dp"
+        android:paddingLeft="10px">
+        <LinearLayout
+            android:id="@+id/controles"
+            android:gravity="right"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:orientation="horizontal">
+            <ImageButton
+                android:id="@+id/enviar"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:background="#06338E"
+                android:layout_gravity="center_vertical"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:maxWidth="50dp"
+                android:maxHeight="50dp"
+                android:src="@drawable/ic_menu_send"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:gravity="left"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:orientation="horizontal"
+            android:paddingRight="10dp"
+            android:paddingLeft="10px">
+            <TextView
+                android:id="@+id/nombre_encuesta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textColor="#ffffff"
+                android:textSize="30dp"
+                android:layout_gravity="center_vertical"/>
+
+        </LinearLayout>
+    </LinearLayout>
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"

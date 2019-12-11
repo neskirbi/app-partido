@@ -13,8 +13,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.opengl.GLSurfaceView;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -26,7 +30,9 @@ import android.text.InputType;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
 import android.util.Base64;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -40,6 +46,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
@@ -76,6 +83,7 @@ public class Funciones {
     Context context;
     Base base ;
     SQLiteDatabase db ;
+    ArrayList<String> respuestas_encuestas=new ArrayList<>();
 
     public Funciones(Context context) {
         this.context=context;
@@ -436,11 +444,14 @@ public class Funciones {
     }
 
     public String URL_Dominio(){
-        String URL="";
-        if (!BuildConfig.DEBUG) {
+        String URL="",wifiname=getWifiName().toString();
+
+        if (wifiname.contains("Casa_AK")) {
             URL="http://192.168.1.110/pruebas/Encuestas/";
-        }else {
+            Log.i("URLLLLL","localhost: "+wifiname);
+        }else{
             URL=context.getString(R.string.dominio_pan);
+            Log.i("URLLLLL","web: "+wifiname);
         }
 
 
@@ -547,6 +558,9 @@ public class Funciones {
         }
     }
 
+
+
+
     public void CargarPreguntas(LinearLayout contenedor,String id_encuesta) {
         ArrayList<JSONObject> preguntas=new ArrayList<>();
         ArrayList<String> id_pregunta=new ArrayList<>();
@@ -592,22 +606,38 @@ public class Funciones {
 
     }
 
-    private void GeneraPreguntas(final LinearLayout contenedor,final ArrayList<String> id_pregunta, ArrayList<JSONObject> preguntas) {
-        Button enviar=null;
-        TextView texto = null;
-        Spinner spinner = null;
-        RadioGroup radioGroup=null;
-        RadioButton radioButton=null;
-        CheckBox checkBox=null;
-        final ArrayList<String> respuesta=new ArrayList<>();
+    ///Preguntas, aqui se carga la vista de las preguntas
 
-
+    public void Texto(String txt,LinearLayout contenedor){
         LinearLayout.LayoutParams parameter = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
         parameter.setMargins(0,20,0,0); // left, top, right, bottom
 
+        TextView texto = null;
+        texto =new TextView(context);
+        texto.setLayoutParams(parameter);
+        texto.setText(txt);
 
+        contenedor.addView(texto);
+    }
+
+
+
+    private void GeneraPreguntas(final LinearLayout contenedor,final ArrayList<String> id_pregunta, ArrayList<JSONObject> preguntas) {
+
+
+        final ArrayList<String> respuesta=new ArrayList<>();
+
+
+        /*LinearLayout.LayoutParams parameter = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        parameter.setMargins(0,10,0,0); // left, top, right, bottom
+*/
+
+        final LinearLayout.LayoutParams parameter = new LinearLayout.LayoutParams(AnchoScreen(90),60); // Width , height
+        parameter.setMargins(0,10,0,0);
 
         int Id=0;
 
@@ -621,16 +651,16 @@ public class Funciones {
 
 
                     case "1":
-                        texto =new TextView(context);
-                        texto.setLayoutParams(parameter);
-                        texto.setText(preguntas.get(i).getString("pregunta"));
-                        contenedor.addView(texto);
+
+                        Texto(preguntas.get(i).getString("pregunta"),contenedor);
 
                         Log.i("CrearPreguntas",preguntas.get(i).getString("pregunta"));
 
                         final EditText edit=new EditText(context);
                         edit.setTag(i);
                         edit.setId(Id);
+                        edit.setLayoutParams(parameter);
+                        edit.setBackgroundResource(R.drawable.borde_redondo);
                         edit.addTextChangedListener(new TextWatcher() {
                             @Override
                             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -662,10 +692,8 @@ public class Funciones {
                         contenedor.addView(edit);
                         break;
                     case "2":
-                        texto =new TextView(context);
-                        texto.setLayoutParams(parameter);
-                        texto.setText(preguntas.get(i).getString("pregunta"));
-                        contenedor.addView(texto);
+                        Spinner spinner = null;
+                        Texto(preguntas.get(i).getString("pregunta"),contenedor);
 
                         Log.i("CrearPreguntas",preguntas.get(i).getString("pregunta"));
 
@@ -711,10 +739,10 @@ public class Funciones {
                         break;
 
                     case "3":
-                        texto =new TextView(context);
-                        texto.setLayoutParams(parameter);
-                        texto.setText(preguntas.get(i).getString("pregunta"));
-                        contenedor.addView(texto);
+                        RadioGroup radioGroup=null;
+                        RadioButton radioButton=null;
+
+                        Texto(preguntas.get(i).getString("pregunta"),contenedor);
 
                         Log.i("CrearPreguntas",preguntas.get(i).getString("pregunta"));
 
@@ -757,19 +785,19 @@ public class Funciones {
                     break;
 
                     case "4":
-                        texto =new TextView(context);
-                        texto.setLayoutParams(parameter);
-                        texto.setText("Ubicación");
-                        contenedor.addView(texto);
+                        Texto("Localización",contenedor);
 
                         Log.i("CrearPreguntas",preguntas.get(i).getString("pregunta"));
+
                         final EditText lat=new EditText(context),lon=new EditText(context);
                         final EditText edit_loc=new EditText(context);
                         edit_loc.setTag(i);
                         edit_loc.setId(Id);
                         contenedor.addView(edit_loc);
 
+                        lat.setLayoutParams(parameter);
                         lat.setInputType(InputType.TYPE_CLASS_NUMBER);
+                        lat.setBackgroundResource(R.drawable.borde_redondo);
                         lat.addTextChangedListener(new TextWatcher() {
                             @Override
                             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -799,7 +827,10 @@ public class Funciones {
                             }
                         });
                         contenedor.addView(lat);
-                        lat.setInputType(InputType.TYPE_CLASS_NUMBER);
+
+                        lon.setLayoutParams(parameter);
+                        lon.setInputType(InputType.TYPE_CLASS_NUMBER);
+                        lon.setBackgroundResource(R.drawable.borde_redondo);
                         lon.addTextChangedListener(new TextWatcher() {
                             @Override
                             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -830,6 +861,8 @@ public class Funciones {
                             }
                         });
                         contenedor.addView(lon);
+
+                        edit_loc.setVisibility(View.GONE);
                         edit_loc.addTextChangedListener(new TextWatcher() {
                             @Override
                             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -866,10 +899,10 @@ public class Funciones {
                         break;
 
                     case "5":
-                        texto =new TextView(context);
-                        texto.setLayoutParams(parameter);
-                        texto.setText(preguntas.get(i).getString("pregunta"));
-                        contenedor.addView(texto);
+
+
+                        CheckBox checkBox=null;
+                        Texto(preguntas.get(i).getString("pregunta"),contenedor);
 
                         Log.i("CrearPreguntas",preguntas.get(i).getString("pregunta"));
 
@@ -932,9 +965,11 @@ public class Funciones {
             //elemento++;
         }
 
+        respuestas_encuestas=respuesta;
 
 
-        enviar=new Button(context);
+
+        /*enviar=new Button(context);
         LinearLayout.LayoutParams  button_param=new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         button_param.setMargins(0,50,0,0);
         enviar.setLayoutParams(button_param);
@@ -942,10 +977,22 @@ public class Funciones {
         enviar.setTextColor(Color.WHITE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             enviar.setBackground(context.getDrawable(R.drawable.botones_azul));
-        }
+        }*/
 
-        final TextView repuestas=new TextView(context);
+        //ImageButton enviar=null;
+
+        /*final TextView repuestas=new TextView(context);
         contenedor.addView(repuestas);
+
+        LinearLayout.LayoutParams  button_param=new LinearLayout.LayoutParams(50, 50);
+        button_param.setMargins(0,0,0,0);
+        button_param.gravity=Gravity.RIGHT;
+
+        enviar.setBackgroundColor(Color.rgb(6,51,142));
+        enviar.setImageResource(R.drawable.ic_menu_send);
+        enviar.setLayoutParams(button_param);
+
+
         enviar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -962,7 +1009,15 @@ public class Funciones {
             }
         });
 
-        contenedor.addView(enviar);
+        contenedor.addView(enviar);*/
+    }
+
+    public String EnviarRespuestas(){
+        String data="";
+        for (int i=0 ; i< respuestas_encuestas.size();i++){
+            data+="\n\n\n\n"+respuestas_encuestas.get(i);
+        }
+        return data;
     }
 
     LocationManager locationManager;
@@ -1088,6 +1143,34 @@ public class Funciones {
             return null;
         }
         return out;
+    }
+
+    public String getWifiName() {
+        WifiManager manager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        if (manager.isWifiEnabled()) {
+            WifiInfo wifiInfo = manager.getConnectionInfo();
+            if (wifiInfo != null) {
+                NetworkInfo.DetailedState state = WifiInfo.getDetailedStateOf(wifiInfo.getSupplicantState());
+                if (state == NetworkInfo.DetailedState.CONNECTED || state == NetworkInfo.DetailedState.OBTAINING_IPADDR) {
+                    return wifiInfo.getSSID();
+                }
+            }
+        }
+        return null;
+    }
+
+    public int AnchoScreen(int porciento){
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        int ancho=Math.round(metrics.widthPixels*((float)porciento/100));
+        Log.i("medidas", ancho+"");
+        return ancho;
+    }
+
+    public int AltoScreen(int porciento){
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        int alto=Math.round(metrics.heightPixels*((float)porciento/100));
+        Log.i("medidas", alto+"");
+        return alto;
     }
 
 }
