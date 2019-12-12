@@ -31,6 +31,7 @@ public class Home extends AppCompatActivity
         setContentView(R.layout.activity_home);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("");
         funciones=new Funciones(getApplicationContext());
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -104,14 +105,14 @@ public class Home extends AppCompatActivity
 
         if (id == R.id.nav_home) {
             startActivity(new Intent(getApplicationContext(), Lista.class));
-        } else if (id == R.id.nav_gallery) {
+        /*} else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_slideshow) {
 
         } else if (id == R.id.nav_tools) {
 
         } else if (id == R.id.nav_share) {
-
+*/
         } else if (id == R.id.nav_LogOut) {
             funciones.LogOut();
         }

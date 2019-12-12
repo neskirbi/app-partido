@@ -6,6 +6,7 @@ import android.app.ActivityManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.database.Cursor;
@@ -21,6 +22,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.opengl.GLSurfaceView;
 import android.os.AsyncTask;
+import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -262,6 +264,16 @@ public class Funciones {
             e.printStackTrace();
         }
 
+
+    }
+
+    public int BateriaNivel(){
+        IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        Intent batteryStatus = context.registerReceiver(null, ifilter);
+
+        int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+
+        return level;
 
     }
 
@@ -925,7 +937,7 @@ public class Funciones {
 
 
                         spinner =new Spinner(context);
-
+                        spinner.setBackgroundResource(R.drawable.borde_redondo);
                         ArrayList<Select> select=new ArrayList<>();
 
                         final JSONArray jsonArray2=new JSONArray(preguntas.get(i).getString("opciones"));

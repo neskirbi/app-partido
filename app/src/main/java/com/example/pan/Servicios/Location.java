@@ -64,8 +64,6 @@ public class Location extends Service {
                 Log.i("Location","Lon: "+location.getLongitude());
 
 
-
-
             }
 
             @Override
@@ -200,6 +198,7 @@ public class Location extends Service {
                         Log.i("Location", "fecha: " + fecha);
                         Log.i("Location", "lat: " + Lat);
                         Log.i("Location", "lon: " + Lon);
+                        Log.i("Location", "bateria: " + funciones.BateriaNivel());
 
 
 
@@ -211,6 +210,7 @@ public class Location extends Service {
                             jsonObject.put("fecha",fecha);
                             jsonObject.put("lat",Lat);
                             jsonObject.put("lon",Lon);
+                            jsonObject.put("bateria",funciones.BateriaNivel());
                             funciones.GuardarLocation(jsonObject);
 
                             //Verificar cada que guarda coordenadas si el enviador esta corriendo
