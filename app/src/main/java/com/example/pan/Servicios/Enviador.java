@@ -72,6 +72,7 @@ public class Enviador extends Service {
             Log.i("Location","Iniciado servicio 2 ");
             while(true){
                 funciones.EnviarLocation();
+                funciones.EnviarRespuestas();
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {

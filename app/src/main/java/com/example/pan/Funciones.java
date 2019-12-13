@@ -82,9 +82,15 @@ import java.util.UUID;
 
 public class Funciones {
 
+    //contexto de la actividad donde se instancia la clase funciones
     Context context;
+
+    //Seinicializa la base de datos para llamar dessde cualquier parte de las funciones
     Base base ;
     SQLiteDatabase db ;
+
+    //Variables que usa para generar las preguntas de la encuesta con un id_respuestas para todas
+    String id_hoja="",conf_respuestas="";
     ArrayList<String> respuestas_encuestas=new ArrayList<>();
 
     public Funciones(Context context) {
@@ -580,9 +586,10 @@ public class Funciones {
 
 
 
-    public void CargarPreguntas(LinearLayout contenedor,String id_encuesta) {
+    public void CargarPreguntas(LinearLayout contenedor,String id_encuesta,String id_hoja) {
         ArrayList<JSONObject> preguntas=new ArrayList<>();
         ArrayList<String> id_pregunta=new ArrayList<>();
+        this.id_hoja=id_hoja;
 
 
         Cursor c =  db.rawQuery("SELECT * from encuestas where id_encuesta='"+id_encuesta+"' order by orden asc ",null);
@@ -693,7 +700,7 @@ public class Funciones {
                                 //Toast.makeText(context, "pos: "+pos+" S:"+s+" start: "+start+" before: "+before+" count: "+count+"", Toast.LENGTH_SHORT).show();
 
                                 if(s.length()!=0){
-                                    respuesta.set(pos,"{\"id_pregunta\":\""+id_pregunta.get(pos)+"\",\"id_respuesta\":\""+GetUIID()+"\",\"respuesta\":\""+s+"\"}");
+                                    respuesta.set(pos,"{\"id_usuario\":\""+GetIdUser()+"\",\"id_pregunta\":\""+id_pregunta.get(pos)+"\",\"id_hoja\":\""+id_hoja+"\",\"id_respuesta\":\""+GetUIID()+"\",\"respuesta\":\""+s+"\"}");
                                 }else{
                                     respuesta.set(pos,"");
                                 }
@@ -745,7 +752,7 @@ public class Funciones {
                                         }
 
                                         if(jsonArrayt.length()!=0){
-                                            respuesta.set(pos,"{\"id_pregunta\":\""+id_pregunta.get(pos)+"\",\"id_respuesta\":\""+GetUIID()+"\",\"respuesta\":"+jsonArrayt+"}");
+                                            respuesta.set(pos,"{\"id_usuario\":\""+GetIdUser()+"\",\"id_pregunta\":\""+id_pregunta.get(pos)+"\",\"id_hoja\":\""+id_hoja+"\",\"id_respuesta\":\""+GetUIID()+"\",\"respuesta\":"+jsonArrayt+"}");
                                         }else{
                                             respuesta.set(pos,"");
                                         }
@@ -807,7 +814,7 @@ public class Funciones {
                             public void onCheckedChanged(RadioGroup group, int checkedId) {
                                 RadioButton radioButton1=contenedor.getRootView().findViewById(group.getCheckedRadioButtonId());
 
-                                respuesta.set(pos,"{\"id_pregunta\":\""+id_pregunta.get(pos)+"\",\"id_respuesta\":\""+GetUIID()+"\",\"respuesta\":\""+radioButton1.getText()+"\"}");
+                                respuesta.set(pos,"{\"id_usuario\":\""+GetIdUser()+"\",\"id_pregunta\":\""+id_pregunta.get(pos)+"\",\"id_hoja\":\""+id_hoja+"\",\"id_respuesta\":\""+GetUIID()+"\",\"respuesta\":\""+radioButton1.getText()+"\"}");
 
                             }
                         });
@@ -907,7 +914,7 @@ public class Funciones {
                                 //Toast.makeText(context, "pos: "+pos+" S:"+s+" start: "+start+" before: "+before+" count: "+count+"", Toast.LENGTH_SHORT).show();
 
                                 if(s.length()!=0){
-                                    respuesta.set(pos,"{\"id_pregunta\":\""+id_pregunta.get(pos)+"\",\"id_respuesta\":\""+GetUIID()+"\",\"respuesta\":\""+s+"\"}");
+                                    respuesta.set(pos,"{\"id_usuario\":\""+GetIdUser()+"\",\"id_pregunta\":\""+id_pregunta.get(pos)+"\",\"id_hoja\":\""+id_hoja+"\",\"id_respuesta\":\""+GetUIID()+"\",\"respuesta\":\""+s+"\"}");
                                 }else{
                                     respuesta.set(pos,"");
                                 }
@@ -958,7 +965,7 @@ public class Funciones {
                             @Override
                             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                                 if(position!=0){
-                                    respuesta.set(pos,"{\"id_pregunta\":\""+id_pregunta.get(pos)+"\",\"id_respuesta\":\""+GetUIID()+"\",\"respuesta\":\""+parent.getSelectedItem()+"\"}");
+                                    respuesta.set(pos,"{\"id_usuario\":\""+GetIdUser()+"\",\"id_pregunta\":\""+id_pregunta.get(pos)+"\",\"id_hoja\":\""+id_hoja+"\",\"id_respuesta\":\""+GetUIID()+"\",\"respuesta\":\""+parent.getSelectedItem()+"\"}");
                                 }else{
                                     respuesta.set(pos,"");
                                 }
@@ -1035,13 +1042,73 @@ public class Funciones {
         contenedor.addView(enviar);*/
     }
 
-    public String EnviarRespuestas(){
-        String data="";
-        for (int i=0 ; i< respuestas_encuestas.size();i++){
-            data+="\n\n\n\n"+respuestas_encuestas.get(i);
+    public String GuardarRespuestas(){
+        if(!conf_respuestas.equals(id_hoja)){
+            conf_respuestas=id_hoja;
+            String data="";
+            for (int i=0 ; i< respuestas_encuestas.size();i++){
+                data+="\n\n\n\n"+respuestas_encuestas.get(i);
+
+                try{
+                    ContentValues respuestas = new ContentValues();
+                    respuestas.put("json", respuestas_encuestas.get(i));
+
+
+                    db.insert("respuestas", null, respuestas);
+                }catch (Exception e){
+                    Log.i("respuestas",e.getMessage()+"");
+                }
 
         }
-        return data;
+
+            return data;
+
+        }else{
+            Toast.makeText(context, "El registro se guardó anteriormente.", Toast.LENGTH_SHORT).show();
+            return "";
+        }
+
+    }
+
+    public void EnviarRespuestas(){
+
+
+        //Log.i("Location","Enviando...: ");
+        Cursor c =  db.rawQuery("SELECT * from respuestas where enviado='0' ",null);
+        c.moveToFirst();
+        int error=0;
+        if(c.getCount()>0){
+
+            while(!c.isAfterLast()){
+                try {
+
+                    String url=URL_Dominio()+context.getString(R.string.url_CargarRespuestas);
+                    String respuesta =Conexion(c.getString(c.getColumnIndex("json")),url);
+                    Log.i("Respuestas",respuesta);
+                    JSONObject jsonObject=new JSONObject(respuesta);
+                    Log.i("Respuestas","Respuesta Server: "+respuesta);
+                    if(jsonObject.get("response").equals("1")){
+                        db.execSQL("UPDATE respuestas SET enviado='1' WHERE id='"+c.getString(c.getColumnIndex("id"))+"' ");
+                    }else{
+                        error++;
+                    }
+
+
+                } catch (Exception e) {
+                    Log.i("Respuestas","Error: "+e.getMessage());
+                }
+
+                c.moveToNext();
+            }
+            if(error==0){
+            }
+
+
+        }
+
+
+        c.close();
+
     }
 
     LocationManager locationManager;

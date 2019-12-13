@@ -24,6 +24,7 @@ public class Preguntas extends AppCompatActivity  {
     ImageButton enviar;
     TextView ttitulo;
     TextView repuestas;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,17 +36,21 @@ public class Preguntas extends AppCompatActivity  {
         ttitulo=findViewById(R.id.titulo);
         ttitulo.setText(titulo);
         contenedor=findViewById(R.id.contenedor);
-        funciones.CargarPreguntas(contenedor,id_ecuesta);
+        funciones.CargarPreguntas(contenedor,id_ecuesta,funciones.GetUIID());
         enviar=findViewById(R.id.enviar);
+
+
+
+        //Esto es para ver el areglo de objetos json que se crea por pregunta-respuesta
         repuestas=new TextView(getApplicationContext());
         contenedor.addView(repuestas);
-        //funciones.LeerCP();
+        //////////////////////////
 
         enviar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 funciones.Vibrar(70);
-                repuestas.setText(funciones.EnviarRespuestas());
+                repuestas.setText(funciones.GuardarRespuestas());
 
             }
         });

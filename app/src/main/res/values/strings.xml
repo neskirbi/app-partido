@@ -26,5 +26,6 @@
     <string name="url_CargarLocation">api/CargarLocation</string>
     <string name="url_descargar_encuestas">api/ObtenerEncuestas</string>
     <string name="url_web_mapa">app/location.php</string>
+    <string name="url_CargarRespuestas">api/CargarRespuestas</string>
 
 </resources>
