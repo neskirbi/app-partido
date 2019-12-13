@@ -6,47 +6,73 @@
     android:layout_height="match_parent"
     tools:context=".Encuestas.Preguntas">
     <LinearLayout
-        android:background="#06338E"
+        android:background="@color/colorPrimary"
         android:layout_width="match_parent"
-        android:layout_height="140dp"
+        android:layout_height="120dp"
         android:orientation="vertical"
         android:paddingRight="10dp"
         android:paddingLeft="10px">
-        <LinearLayout
+        <FrameLayout
             android:id="@+id/controles"
-            android:gravity="right"
             android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:orientation="horizontal">
+            android:layout_height="70dp">
+
             <ImageButton
-                android:id="@+id/enviar"
+                android:id="@+id/back"
                 android:paddingLeft="5dp"
                 android:paddingRight="5dp"
-                android:background="#06338E"
-                android:layout_gravity="center_vertical"
+                android:background="@color/transparent"
+                android:layout_gravity="center_vertical|left"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:maxWidth="50dp"
                 android:maxHeight="50dp"
+                android:src="@drawable/back_arrow"/>
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/foto"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:src="@drawable/sin_avatar"
+                android:layout_gravity="center_vertical|right"
+
+                app:civ_border_color="@color/transparent"
+                />
+
+            <ImageButton
+                android:id="@+id/enviar"
+                android:background="@color/transparent"
+                android:layout_gravity="center_vertical|right"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:foregroundGravity="right"
+                android:layout_marginRight="55dp"
                 android:src="@drawable/ic_menu_send"/>
 
-        </LinearLayout>
+        </FrameLayout>
 
         <LinearLayout
             android:gravity="left"
             android:layout_width="match_parent"
-            android:layout_height="70dp"
+            android:layout_height="50dp"
             android:orientation="horizontal"
             android:paddingRight="10dp"
-            android:paddingLeft="10px">
+            android:paddingLeft="10dp">
             <TextView
                 android:id="@+id/titulo"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text=""
+                android:text="Titulo"
                 android:textColor="#ffffff"
-                android:textSize="30dp"
-                android:layout_gravity="center_vertical"/>
+                android:textSize="25dp"
+                android:layout_gravity="center_vertical"
+                android:singleLine="true"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit ="marquee_forever"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:scrollHorizontally="true"/>
 
         </LinearLayout>
     </LinearLayout>

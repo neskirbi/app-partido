@@ -1,10 +1,10 @@
 package com.example.pan;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -13,20 +13,16 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.Point;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.opengl.GLSurfaceView;
-import android.os.AsyncTask;
 import android.os.BatteryManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
@@ -34,31 +30,20 @@ import android.text.format.DateFormat;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Display;
-import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.pan.Encuestas.Lista;
 import com.example.pan.Servicios.Location;
 
 import org.json.JSONArray;
@@ -517,6 +502,18 @@ public class Funciones {
         c.close();
     }
 
+    public Bitmap GetFoto(){
+
+        Cursor c =  db.rawQuery("SELECT * from login ",null);
+        c.moveToFirst();
+
+        Bitmap bit= getBitmapFromURL(c.getString(c.getColumnIndex("foto")));
+
+        c.close();
+
+        return bit;
+    }
+
 
     public String GetIdUser() {
         String ID="";
@@ -547,6 +544,7 @@ public class Funciones {
 
     public void DescargarEncuestas() {
 
+        int errores=0;
         String url=URL_Dominio()+context.getString(R.string.url_descargar_encuestas);
 
         String respuesta="";
@@ -556,7 +554,7 @@ public class Funciones {
             respuesta=Conexion("{\"id_usuario\":\""+GetIdUser()+"\"}",url);
 
             if (respuesta.length() == 0) {
-                Toast.makeText(context, "Sin resultados!!", Toast.LENGTH_SHORT).show();
+                Dialogo("Sin datos.");
             } else {
                 db.execSQL("DELETE from encuestas ");
 
@@ -578,8 +576,14 @@ public class Funciones {
             }
         }catch (Exception e)
         {
+            errores++;
             Log.i("Encuestas","2."+e.getMessage());
             Toast.makeText(context, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+        if(errores>0){
+            Dialogo("No se esta actualizando correctamente.");
+        }else{
+            Toast.makeText(context, "Actualizado Correctamente.", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -991,83 +995,59 @@ public class Funciones {
                 Log.i("CrearPreguntas","Error: "+e.getMessage());
             }
 
-            respuesta.add(i,""+i);
-            //elemento++;
+            respuesta.add(i,"");
         }
 
         respuestas_encuestas=respuesta;
 
 
 
-        /*enviar=new Button(context);
-        LinearLayout.LayoutParams  button_param=new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        button_param.setMargins(0,50,0,0);
-        enviar.setLayoutParams(button_param);
-        enviar.setText("Enviar");
-        enviar.setTextColor(Color.WHITE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            enviar.setBackground(context.getDrawable(R.drawable.botones_azul));
-        }*/
 
-        //ImageButton enviar=null;
-
-        /*final TextView repuestas=new TextView(context);
-        contenedor.addView(repuestas);
-
-        LinearLayout.LayoutParams  button_param=new LinearLayout.LayoutParams(50, 50);
-        button_param.setMargins(0,0,0,0);
-        button_param.gravity=Gravity.RIGHT;
-
-        enviar.setBackgroundColor(Color.rgb(6,51,142));
-        enviar.setImageResource(R.drawable.ic_menu_send);
-        enviar.setLayoutParams(button_param);
-
-
-        enviar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Vibrar(70);
-
-                //Toast.makeText(context, ""+edi.getText(), Toast.LENGTH_SHORT).show();
-                String data="";
-
-                for (int i=0 ; i< respuesta.size();i++){
-                    data+="\n\n\n\n"+respuesta.get(i);
-                }
-                repuestas.setText(data);
-
-            }
-        });
-
-        contenedor.addView(enviar);*/
     }
 
-    public String GuardarRespuestas(){
-        if(!conf_respuestas.equals(id_hoja)){
-            conf_respuestas=id_hoja;
-            String data="";
-            for (int i=0 ; i< respuestas_encuestas.size();i++){
-                data+="\n\n\n\n"+respuestas_encuestas.get(i);
+    public void GuardarRespuestas(){
+        if(VarificarArregloCompleto(respuestas_encuestas)){
+            if(!conf_respuestas.equals(id_hoja)){
+                conf_respuestas=id_hoja;
+                String data="";
+                for (int i=0 ; i< respuestas_encuestas.size();i++){
+                    data+="\n\n\n\n"+respuestas_encuestas.get(i);
 
-                try{
-                    ContentValues respuestas = new ContentValues();
-                    respuestas.put("json", respuestas_encuestas.get(i));
+                    try{
+                        ContentValues respuestas = new ContentValues();
+                        respuestas.put("json", respuestas_encuestas.get(i));
 
 
-                    db.insert("respuestas", null, respuestas);
-                }catch (Exception e){
-                    Log.i("respuestas",e.getMessage()+"");
+                        db.insert("respuestas", null, respuestas);
+                    }catch (Exception e){
+                        Log.i("respuestas",e.getMessage()+"");
+                    }
+
                 }
+                Toast.makeText(context, "Encuesta guardada.", Toast.LENGTH_SHORT).show();
 
-        }
-
-            return data;
-
+            }else{
+                Toast.makeText(context, "El registro se guardó anteriormente.", Toast.LENGTH_SHORT).show();
+            }
         }else{
-            Toast.makeText(context, "El registro se guardó anteriormente.", Toast.LENGTH_SHORT).show();
-            return "";
+            Toast.makeText(context, "Debe llenar todas las preguntas.", Toast.LENGTH_SHORT).show();
         }
 
+
+    }
+
+    private boolean VarificarArregloCompleto(ArrayList<String> respuestas){
+        int completo=0;
+        for (int i = 0;i < respuestas.size();i++){
+            if(respuestas.get(i).length()==0){
+                completo++;
+            }
+        }
+        if(completo > 0){
+            return false;
+        }else{
+            return true;
+        }
     }
 
     public void EnviarRespuestas(){
@@ -1262,6 +1242,31 @@ public class Funciones {
         int alto=Math.round(metrics.heightPixels*((float)porciento/100));
         Log.i("medidas", alto+"");
         return alto;
+    }
+
+    public void Dialogo(String msn){
+        android.support.v7.app.AlertDialog.Builder builder1 = new android.support.v7.app.AlertDialog.Builder(context);
+        builder1.setMessage(msn);
+        builder1.setCancelable(true);
+
+        builder1.setPositiveButton(
+                "Aceptar",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        /*builder1.setNegativeButton(
+                "No",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });*/
+
+        AlertDialog alert11 = builder1.create();
+        alert11.show();
     }
 
 }

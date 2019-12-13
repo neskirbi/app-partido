@@ -26,6 +26,7 @@ public class Base extends SQLiteOpenHelper {
                 "pass TEXT NOT NULL," +
                 "nombre TEXT NOT NULL," +
                 "foto TEXT NOT NULL," +
+                "foto64 TEXT DEFAULT ''," +
                 "activo TEXT NOT NULL)";
 
         LOGIN_TABLE_CREATE= "CREATE TABLE IF NOT EXISTS  login(" +

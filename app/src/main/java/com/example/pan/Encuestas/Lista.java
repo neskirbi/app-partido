@@ -45,7 +45,8 @@ public class Lista extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lista);
-        funciones=new Funciones(getApplicationContext());
+        //pongo this por que el alert dialog  solo funciona con contexto this
+        funciones=new Funciones(this);
         base = new Base(getApplicationContext());
         db = base.getWritableDatabase();
         lista=findViewById(R.id.lista);
@@ -77,6 +78,8 @@ public class Lista extends AppCompatActivity {
         });
 
         Llenar();
+
+
 
     }
 
