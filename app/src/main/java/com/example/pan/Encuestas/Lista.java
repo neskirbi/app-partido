@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import com.example.pan.Base;
 import com.example.pan.Funciones;
+import com.example.pan.Home;
 import com.example.pan.R;
 
 import org.json.JSONException;
@@ -168,4 +169,11 @@ public class Lista extends AppCompatActivity {
             return(item);
         }
     }
+
+    @Override
+    public void onBackPressed() {
+        startActivity(new Intent(this, Home.class));
+
+    }
+
 }
