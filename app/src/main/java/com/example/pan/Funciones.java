@@ -448,7 +448,7 @@ public class Funciones {
 
     public String URL_Dominio(){
         String URL="",wifiname=getWifiName();
-
+/*
         if(wifiname!=null)
         {
             if (wifiname.contains("Casa_AK")) {
@@ -464,7 +464,9 @@ public class Funciones {
             Log.i("URLLLLL","web: "+wifiname);
         }
 
-
+*/
+        URL=context.getString(R.string.dominio_pan);
+        Log.i("URLLLLL","web: "+wifiname);
 
 
         return URL;
